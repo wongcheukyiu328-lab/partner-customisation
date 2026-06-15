@@ -1,0 +1,731 @@
+<!-- AIR login modal — Brand controls panel -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  :root {
+    --ink: #002536;
+    --soft: #798b95;
+    --line: #d6e0e5;
+    --panel-bg: #ffffff;
+    --app-bg: #eef3f6;
+    --accent: #002536;
+    --radius: 14px;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--app-bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ----------  INSPECTOR  ---------- */
+  .inspector {
+    background: var(--panel-bg);
+    border-right: 1px solid var(--line);
+    padding: 28px 24px 32px;
+    overflow-y: auto;
+  }
+  .inspector h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 2px;
+  }
+  .inspector .sub {
+    font-size: 12.5px;
+    color: var(--soft);
+    margin: 0 0 26px;
+    line-height: 1.45;
+  }
+
+  .field { margin-bottom: 26px; }
+  .field > label.title {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-bottom: 10px;
+  }
+  .hint {
+    font-size: 11.5px;
+    color: var(--soft);
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+
+  /* color row */
+  .color-row { display: flex; gap: 8px; align-items: center; }
+  .swatch {
+    position: relative; width: 42px; height: 42px; flex: none;
+    border-radius: 10px; overflow: hidden; cursor: pointer;
+    background: linear-gradient(135deg, #ff3b3b, #ffae00, #fbff00, #2fff5a, #00e0ff, #2b6bff, #c14bff, #ff5bc8);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .swatch input[type="color"] {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0; cursor: pointer; border: none; padding: 0; background: none;
+  }
+  .hex {
+    flex: 1; height: 42px; border: 1px solid var(--line);
+    border-radius: 10px; padding: 0 12px; font: inherit;
+    font-size: 13.5px; text-transform: uppercase; color: var(--ink);
+    letter-spacing: 0.03em; outline: none;
+  }
+  .hex:focus { border-color: var(--soft); }
+
+  .presets { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+  .preset {
+    width: 28px; height: 28px; border-radius: 8px; cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0,37,54,.12);
+    transition: transform .12s ease;
+  }
+  .preset:hover { transform: scale(1.08); }
+  .preset[aria-selected="true"] { box-shadow: inset 0 0 0 1px rgba(0,37,54,.12), 0 0 0 2px var(--app-bg), 0 0 0 4px var(--ink); }
+
+  /* select */
+  .select {
+    width: 100%; height: 44px; border: 1px solid var(--line);
+    border-radius: 10px; padding: 0 14px; font: inherit; font-size: 14px;
+    color: var(--ink); background: #fff; cursor: pointer; outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23798b95' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+  }
+  .select:focus { border-color: var(--soft); }
+
+  /* font dropdown */
+  .font-slot { margin-bottom: 14px; }
+  .font-slot:last-of-type { margin-bottom: 0; }
+  .font-slot .sub-label {
+    display: block; font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 6px;
+  }
+  .font-row { display: flex; gap: 8px; align-items: center; }
+  .font-select-wrap { position: relative; flex: 1; min-width: 0; }
+  .upload-mini {
+    flex: none; width: 44px; height: 44px; border-radius: 10px;
+    border: 1px solid var(--line); background: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; color: var(--soft);
+    transition: background .12s ease, color .12s ease;
+  }
+  .upload-mini:hover { background: #f4f7f9; color: var(--ink); }
+  .font-select {
+    width: 100%; height: 44px; border: 1px solid var(--line);
+    border-radius: 10px; padding: 0 38px 0 14px; font: inherit; font-size: 14px;
+    color: var(--ink); background: #fff; cursor: pointer; outline: none; text-align: left;
+    display: flex; align-items: center;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23798b95' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+  }
+  .font-select:focus { border-color: var(--soft); }
+  .font-value { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* AIR placeholder token: text-placeholder #b8cad4, DM Sans Medium */
+  .font-value.is-placeholder { color: #b8cad4; font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .font-results {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 30;
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 14px 34px -12px rgba(0,37,54,.24);
+    max-height: 264px; overflow-y: auto; padding: 6px; display: none;
+  }
+  .font-results.open { display: block; }
+  .font-results .cat-head {
+    font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--soft);
+    padding: 10px 12px 4px; position: sticky; top: 0; background: #fff;
+  }
+  .font-results .opt {
+    padding: 9px 12px; border-radius: 8px; cursor: pointer; color: var(--ink);
+    font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .font-results .opt:hover, .font-results .opt.active { background: #f1f5f7; }
+
+  /* logo controls */
+  .logo-preview {
+    height: 60px; border: 1px dashed var(--line); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px; background:
+      linear-gradient(45deg,#f4f7f9 25%,transparent 25%,transparent 75%,#f4f7f9 75%),
+      linear-gradient(45deg,#f4f7f9 25%,#fff 25%,#fff 75%,#f4f7f9 75%);
+    background-size: 14px 14px; background-position: 0 0, 7px 7px;
+    overflow: hidden;
+  }
+  .logo-preview img { height: 32px; width: auto; max-width: 160px; object-fit: contain; }
+  .logo-preview .air-logo { height: 26px; width: auto; color: #002536; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn {
+    flex: 1; height: 40px; border-radius: 10px; font: inherit; font-size: 13px;
+    font-weight: 600; cursor: pointer; border: 1px solid var(--line);
+    background: #fff; color: var(--ink); transition: background .12s ease;
+  }
+  .btn:hover { background: #f4f7f9; }
+  .btn.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn.primary:hover { background: #013247; }
+  .btn.ghost { color: var(--soft); }
+
+  .divider-h { height: 1px; background: var(--line); margin: 4px 0 24px; }
+
+  .export-note { font-size: 11.5px; color: var(--soft); margin-top: 9px; line-height: 1.45; }
+
+  /* ----------  STAGE  ---------- */
+  .stage {
+    display: flex; align-items: center; justify-content: center; padding: 40px;
+    background:
+      radial-gradient(120% 120% at 50% 0%, rgba(0,37,54,.06), transparent 60%),
+      var(--app-bg);
+  }
+
+  /* The AIR modal — preview target */
+  .modal {
+    --modal-bg: #f7f7f7;
+    --surface: #ffffff;
+    --txt: #002536;
+    --txt-soft: #798b95;
+    --placeholder: #b8cad4;
+    --line2: #d6e0e5;
+    --stroke: #9fb3bf;
+    --font-heading: 'Poppins', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-button: 'DM Sans', sans-serif;
+
+    width: 393px; max-width: 100%;
+    background: var(--modal-bg);
+    border-radius: 32px;
+    padding: 36px 32px 26px;
+    position: relative;
+    box-shadow: 0 24px 60px -18px rgba(0,37,54,.28), 0 0 0 1px rgba(0,37,54,.04);
+    font-family: var(--font-body);
+    transition: background .2s ease;
+  }
+  .modal[data-theme="dark"] {
+    --surface: rgba(255,255,255,.08);
+    --txt: #ffffff;
+    --txt-soft: rgba(255,255,255,.62);
+    --placeholder: rgba(255,255,255,.4);
+    --line2: rgba(255,255,255,.16);
+    --stroke: rgba(255,255,255,.28);
+  }
+
+  .modal .close {
+    position: absolute; top: 22px; right: 22px; width: 22px; height: 22px;
+    cursor: pointer; color: var(--txt-soft); opacity: .9;
+  }
+  .modal .logo-slot {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    height: 40px; margin: 6px 0 22px; color: var(--txt);
+  }
+  .modal .logo-slot img { height: 32px; width: auto; max-width: 100%; object-fit: contain; }
+  .modal .logo-slot .air-logo { height: 26px; width: auto; }
+  .modal h2 {
+    font-family: var(--font-heading); font-weight: 500; font-size: 19px;
+    text-align: center; color: var(--txt); margin: 0 0 22px; letter-spacing: -0.01em;
+  }
+
+  .modal .input {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--stroke);
+    border-radius: 12px; padding: 0 6px 0 16px; height: 48px;
+  }
+  .modal .input input {
+    flex: 1; border: none; background: none; outline: none;
+    font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--txt);
+  }
+  .modal .input input::placeholder { color: var(--placeholder); }
+  .modal .input .go {
+    width: 36px; height: 36px; flex: none; border-radius: 10px;
+    background: #9fb3bf; border: none;
+    display: flex; align-items: center; justify-content: center; color: #ffffff;
+  }
+
+  .modal .or {
+    display: flex; align-items: center; gap: 14px; margin: 18px 0;
+    color: var(--txt-soft); font-family: var(--font-body); font-size: 13px;
+  }
+  .modal .or::before, .modal .or::after {
+    content: ''; flex: 1; height: 1px; background: var(--line2);
+  }
+
+  .modal .oauth {
+    display: flex; align-items: center; justify-content: center; gap: 11px;
+    height: 48px; border-radius: 1000px; background: var(--surface);
+    border: 1px solid var(--stroke); color: var(--txt);
+    font-family: var(--font-button); font-weight: 600; font-size: 14px; cursor: pointer;
+  }
+  /* utility link — DM Sans 12px Medium per Figma, fixed regardless of font control */
+  .modal .alt {
+    display: block; text-align: center; margin: 18px 0 32px;
+    font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 12px;
+    color: var(--txt-soft); text-decoration: underline; text-underline-offset: 3px;
+  }
+  /* Powered-by AIR is platform attribution — locked to AIR's brand fonts, not the customer's chosen font */
+  .modal .powered {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    color: var(--txt-soft); font-family: 'DM Sans', sans-serif; font-size: 12px; opacity: .85;
+  }
+  .modal .powered .air-logo { height: 12px; width: auto; }
+
+  .stage-label {
+    position: absolute; top: 22px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--soft);
+  }
+
+  /* toast */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 12px;
+    font-size: 13px; font-weight: 500; opacity: 0; pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease; z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 820px) {
+    .wrap { grid-template-columns: 1fr; }
+    .inspector { border-right: none; border-bottom: 1px solid var(--line); }
+    .stage { padding: 28px 16px; }
+  }
+</style>
+
+<div class="wrap">
+  <!-- ============ INSPECTOR ============ -->
+  <aside class="inspector">
+    <h1>Brand controls</h1>
+    <p class="sub">Style the login modal without touching code. Changes preview live on the right.</p>
+
+    <!-- Background -->
+    <div class="field">
+      <label class="title" for="bgColor">Container background</label>
+      <div class="color-row">
+        <span class="swatch" title="Pick a color">
+          <input type="color" id="bgColor" value="#f7f7f7" />
+        </span>
+        <input type="text" id="bgHex" class="hex" value="#F7F7F7" maxlength="7" spellcheck="false" />
+      </div>
+      <div class="presets" id="presets"></div>
+      <p class="hint">Text and field colors adjust automatically to stay legible on dark backgrounds.</p>
+    </div>
+
+    <!-- Fonts -->
+    <div class="field">
+      <label class="title">Fonts</label>
+      <p class="hint" style="margin: -2px 0 12px;">Headings, body, and buttons can each use their own typeface.</p>
+
+      <div class="font-slot" data-role="heading">
+        <label class="sub-label">Headings</label>
+        <div class="font-row">
+          <div class="font-select-wrap">
+            <button type="button" class="font-select" aria-haspopup="listbox" aria-expanded="false">
+              <span class="font-value">Poppins</span>
+            </button>
+            <div class="font-results" role="listbox"></div>
+          </div>
+          <button type="button" class="upload-mini" title="Upload heading font">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+          </button>
+          <input type="file" class="font-file" accept=".woff2,.woff,.ttf,.otf" hidden />
+        </div>
+      </div>
+
+      <div class="font-slot" data-role="body">
+        <label class="sub-label">Body text</label>
+        <div class="font-row">
+          <div class="font-select-wrap">
+            <button type="button" class="font-select" aria-haspopup="listbox" aria-expanded="false">
+              <span class="font-value">DM Sans</span>
+            </button>
+            <div class="font-results" role="listbox"></div>
+          </div>
+          <button type="button" class="upload-mini" title="Upload body font">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+          </button>
+          <input type="file" class="font-file" accept=".woff2,.woff,.ttf,.otf" hidden />
+        </div>
+      </div>
+
+      <div class="font-slot" data-role="button">
+        <label class="sub-label">Buttons</label>
+        <div class="font-row">
+          <div class="font-select-wrap">
+            <button type="button" class="font-select" aria-haspopup="listbox" aria-expanded="false">
+              <span class="font-value">DM Sans</span>
+            </button>
+            <div class="font-results" role="listbox"></div>
+          </div>
+          <button type="button" class="upload-mini" title="Upload button font">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+          </button>
+          <input type="file" class="font-file" accept=".woff2,.woff,.ttf,.otf" hidden />
+        </div>
+      </div>
+
+      <p class="hint" style="margin-top: 12px;">Each dropdown lists Google Fonts; the upload button beside it takes .woff2 / .woff / .ttf / .otf. "Try another method" and "Powered by AIR" stay on AIR's fonts.</p>
+    </div>
+
+    <!-- Logo -->
+    <div class="field">
+      <label class="title">Logo</label>
+      <div class="logo-preview" id="logoPreview">
+        <svg class="air-logo" viewBox="0 0 48 18" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AIR"><path d="M0.202988 10.4074C1.04088 8.82591 4.34448 8.94813 7.58533 10.6741C10.8262 12.4037 12.7714 15.0852 11.9372 16.6667C11.0993 18.2481 7.79573 18.1259 4.55488 16.4C1.31403 14.6704 -0.634908 11.9889 0.202988 10.4074ZM14.4878 2.20369C16.2707 2.20369 17.7176 5.18887 17.7176 8.87036C17.7176 12.5518 16.2707 15.537 14.4878 15.537C12.705 15.537 11.258 12.5518 11.258 8.87036C11.258 5.18887 12.705 2.20369 14.4878 2.20369ZM4.54381 1.37776C7.78466 -0.351865 11.0883 -0.470384 11.9262 1.1111C12.764 2.69258 10.8151 5.37406 7.57426 7.10369C4.33341 8.83332 1.02981 8.95184 0.191915 7.37036C-0.645981 5.78887 1.30296 3.10739 4.54381 1.37776Z" fill="currentColor"/><path d="M39.8499 15.537H37.9047V2.2037H42.4891C45.3055 2.2037 47.5091 3.4963 47.5091 6.24445C47.5091 8.99259 46.3574 9.50741 44.4934 9.90741C45.1984 10.3259 45.9957 11.1259 46.7339 12.7259L48 15.5407H45.8185L44.8293 13.2926C44.0357 11.7185 43.3824 10.6481 41.5183 10.6481H39.8721L39.8536 15.5407L39.8499 15.537ZM42.5112 4.03704H39.8942L39.8757 8.90741H42.4743C44.1797 8.90741 45.431 8.03333 45.431 6.42222C45.431 4.81111 44.1206 4.03704 42.5149 4.03704H42.5112Z" fill="currentColor"/><path d="M34.3722 2.2037H36.395V15.537H34.3722V2.2037Z" fill="currentColor"/><path d="M21.2612 15.537L24.8342 4.02222C25.2255 2.78889 26.1815 2.2037 27.2741 2.2037C28.3667 2.2037 29.3448 2.78889 29.7324 4.02222L33.3055 15.537H31.2753L30.1458 11.7815H24.395L23.2729 15.537H21.2612ZM26.5506 4.60741L24.9487 9.98148H29.618L28.0345 4.60741C27.8979 4.1963 27.6654 4 27.2925 4C26.9197 4 26.6687 4.1963 26.5506 4.60741Z" fill="currentColor"/></svg>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" id="uploadBtn">Upload logo</button>
+        <button class="btn ghost" id="resetLogoBtn">Reset</button>
+      </div>
+      <input type="file" id="logoFile" accept="image/png,image/jpeg,image/svg+xml,image/webp" hidden />
+      <p class="hint">PNG, SVG, JPG or WebP. Transparent PNG/SVG works best.</p>
+    </div>
+
+    <div class="divider-h"></div>
+
+    <div class="field" style="margin-bottom:0;">
+      <button class="btn primary" id="exportBtn" style="width:100%;height:44px;">Copy theme config</button>
+      <p class="export-note">Copies the background, font and logo state as CSS variables — paste into your component or hand to engineering.</p>
+    </div>
+  </aside>
+
+  <!-- ============ STAGE ============ -->
+  <main class="stage">
+    <span class="stage-label">Live preview</span>
+    <div class="modal" id="modal" data-theme="light">
+      <svg class="close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+
+      <div class="logo-slot" id="modalLogo">
+        <svg class="air-logo" viewBox="0 0 48 18" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AIR"><path d="M0.202988 10.4074C1.04088 8.82591 4.34448 8.94813 7.58533 10.6741C10.8262 12.4037 12.7714 15.0852 11.9372 16.6667C11.0993 18.2481 7.79573 18.1259 4.55488 16.4C1.31403 14.6704 -0.634908 11.9889 0.202988 10.4074ZM14.4878 2.20369C16.2707 2.20369 17.7176 5.18887 17.7176 8.87036C17.7176 12.5518 16.2707 15.537 14.4878 15.537C12.705 15.537 11.258 12.5518 11.258 8.87036C11.258 5.18887 12.705 2.20369 14.4878 2.20369ZM4.54381 1.37776C7.78466 -0.351865 11.0883 -0.470384 11.9262 1.1111C12.764 2.69258 10.8151 5.37406 7.57426 7.10369C4.33341 8.83332 1.02981 8.95184 0.191915 7.37036C-0.645981 5.78887 1.30296 3.10739 4.54381 1.37776Z" fill="currentColor"/><path d="M39.8499 15.537H37.9047V2.2037H42.4891C45.3055 2.2037 47.5091 3.4963 47.5091 6.24445C47.5091 8.99259 46.3574 9.50741 44.4934 9.90741C45.1984 10.3259 45.9957 11.1259 46.7339 12.7259L48 15.5407H45.8185L44.8293 13.2926C44.0357 11.7185 43.3824 10.6481 41.5183 10.6481H39.8721L39.8536 15.5407L39.8499 15.537ZM42.5112 4.03704H39.8942L39.8757 8.90741H42.4743C44.1797 8.90741 45.431 8.03333 45.431 6.42222C45.431 4.81111 44.1206 4.03704 42.5149 4.03704H42.5112Z" fill="currentColor"/><path d="M34.3722 2.2037H36.395V15.537H34.3722V2.2037Z" fill="currentColor"/><path d="M21.2612 15.537L24.8342 4.02222C25.2255 2.78889 26.1815 2.2037 27.2741 2.2037C28.3667 2.2037 29.3448 2.78889 29.7324 4.02222L33.3055 15.537H31.2753L30.1458 11.7815H24.395L23.2729 15.537H21.2612ZM26.5506 4.60741L24.9487 9.98148H29.618L28.0345 4.60741C27.8979 4.1963 27.6654 4 27.2925 4C26.9197 4 26.6687 4.1963 26.5506 4.60741Z" fill="currentColor"/></svg>
+      </div>
+
+      <h2>Log in or sign up</h2>
+
+      <div class="input">
+        <input type="email" placeholder="Email" />
+        <div class="go">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+
+      <div class="or">or</div>
+
+      <div class="oauth">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.2c-.3 1.4-1.1 2.6-2.3 3.4v2.8h3.7c2.2-2 3.4-5 3.4-8.4Z"/><path fill="#34A853" d="M12 24c3.1 0 5.7-1 7.6-2.8l-3.7-2.8c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.8v2.9C3.7 21.4 7.6 24 12 24Z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.4-.4-2.2s.1-1.5.4-2.2V7.5H1.8C1 9 .5 10.7.5 12.6s.5 3.6 1.3 5.1l3.8-2.9Z"/><path fill="#EA4335" d="M12 4.9c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.7 1.4 15.1.3 12 .3 7.6.3 3.7 2.9 1.8 6.6l3.8 2.9C6.5 6.9 9 4.9 12 4.9Z"/></svg>
+        Continue with Google
+      </div>
+
+      <a class="alt">Try another method</a>
+
+      <div class="powered">Powered by
+        <svg class="air-logo" viewBox="0 0 48 18" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AIR"><path d="M0.202988 10.4074C1.04088 8.82591 4.34448 8.94813 7.58533 10.6741C10.8262 12.4037 12.7714 15.0852 11.9372 16.6667C11.0993 18.2481 7.79573 18.1259 4.55488 16.4C1.31403 14.6704 -0.634908 11.9889 0.202988 10.4074ZM14.4878 2.20369C16.2707 2.20369 17.7176 5.18887 17.7176 8.87036C17.7176 12.5518 16.2707 15.537 14.4878 15.537C12.705 15.537 11.258 12.5518 11.258 8.87036C11.258 5.18887 12.705 2.20369 14.4878 2.20369ZM4.54381 1.37776C7.78466 -0.351865 11.0883 -0.470384 11.9262 1.1111C12.764 2.69258 10.8151 5.37406 7.57426 7.10369C4.33341 8.83332 1.02981 8.95184 0.191915 7.37036C-0.645981 5.78887 1.30296 3.10739 4.54381 1.37776Z" fill="currentColor"/><path d="M39.8499 15.537H37.9047V2.2037H42.4891C45.3055 2.2037 47.5091 3.4963 47.5091 6.24445C47.5091 8.99259 46.3574 9.50741 44.4934 9.90741C45.1984 10.3259 45.9957 11.1259 46.7339 12.7259L48 15.5407H45.8185L44.8293 13.2926C44.0357 11.7185 43.3824 10.6481 41.5183 10.6481H39.8721L39.8536 15.5407L39.8499 15.537ZM42.5112 4.03704H39.8942L39.8757 8.90741H42.4743C44.1797 8.90741 45.431 8.03333 45.431 6.42222C45.431 4.81111 44.1206 4.03704 42.5149 4.03704H42.5112Z" fill="currentColor"/><path d="M34.3722 2.2037H36.395V15.537H34.3722V2.2037Z" fill="currentColor"/><path d="M21.2612 15.537L24.8342 4.02222C25.2255 2.78889 26.1815 2.2037 27.2741 2.2037C28.3667 2.2037 29.3448 2.78889 29.7324 4.02222L33.3055 15.537H31.2753L30.1458 11.7815H24.395L23.2729 15.537H21.2612ZM26.5506 4.60741L24.9487 9.98148H29.618L28.0345 4.60741C27.8979 4.1963 27.6654 4 27.2925 4C26.9197 4 26.6687 4.1963 26.5506 4.60741Z" fill="currentColor"/></svg>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast">Copied to clipboard</div>
+
+<script>
+(function () {
+  const modal       = document.getElementById('modal');
+  const bgColor     = document.getElementById('bgColor');
+  const bgHex       = document.getElementById('bgHex');
+  const presetsWrap = document.getElementById('presets');
+  const modalLogo   = document.getElementById('modalLogo');
+  const logoPreview = document.getElementById('logoPreview');
+  const logoFile    = document.getElementById('logoFile');
+  const toast       = document.getElementById('toast');
+
+  const DEFAULT_LOGO_SVG =
+    `<svg class="air-logo" viewBox="0 0 48 18" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AIR"><path d="M0.202988 10.4074C1.04088 8.82591 4.34448 8.94813 7.58533 10.6741C10.8262 12.4037 12.7714 15.0852 11.9372 16.6667C11.0993 18.2481 7.79573 18.1259 4.55488 16.4C1.31403 14.6704 -0.634908 11.9889 0.202988 10.4074ZM14.4878 2.20369C16.2707 2.20369 17.7176 5.18887 17.7176 8.87036C17.7176 12.5518 16.2707 15.537 14.4878 15.537C12.705 15.537 11.258 12.5518 11.258 8.87036C11.258 5.18887 12.705 2.20369 14.4878 2.20369ZM4.54381 1.37776C7.78466 -0.351865 11.0883 -0.470384 11.9262 1.1111C12.764 2.69258 10.8151 5.37406 7.57426 7.10369C4.33341 8.83332 1.02981 8.95184 0.191915 7.37036C-0.645981 5.78887 1.30296 3.10739 4.54381 1.37776Z" fill="currentColor"/><path d="M39.8499 15.537H37.9047V2.2037H42.4891C45.3055 2.2037 47.5091 3.4963 47.5091 6.24445C47.5091 8.99259 46.3574 9.50741 44.4934 9.90741C45.1984 10.3259 45.9957 11.1259 46.7339 12.7259L48 15.5407H45.8185L44.8293 13.2926C44.0357 11.7185 43.3824 10.6481 41.5183 10.6481H39.8721L39.8536 15.5407L39.8499 15.537ZM42.5112 4.03704H39.8942L39.8757 8.90741H42.4743C44.1797 8.90741 45.431 8.03333 45.431 6.42222C45.431 4.81111 44.1206 4.03704 42.5149 4.03704H42.5112Z" fill="currentColor"/><path d="M34.3722 2.2037H36.395V15.537H34.3722V2.2037Z" fill="currentColor"/><path d="M21.2612 15.537L24.8342 4.02222C25.2255 2.78889 26.1815 2.2037 27.2741 2.2037C28.3667 2.2037 29.3448 2.78889 29.7324 4.02222L33.3055 15.537H31.2753L30.1458 11.7815H24.395L23.2729 15.537H21.2612ZM26.5506 4.60741L24.9487 9.98148H29.618L28.0345 4.60741C27.8979 4.1963 27.6654 4 27.2925 4C26.9197 4 26.6687 4.1963 26.5506 4.60741Z" fill="currentColor"/></svg>`;
+
+  const PRESETS = [
+    { name: 'AIR Mist',   hex: '#F7F7F7' },
+    { name: 'White',      hex: '#FFFFFF' },
+    { name: 'Sky tint',   hex: '#EAF2F6' },
+    { name: 'Lilac',      hex: '#F0EEFF' },
+    { name: 'Warm sand',  hex: '#FFF6ED' },
+    { name: 'Mint',       hex: '#EBF7F0' },
+    { name: 'Deep teal',  hex: '#002536' },
+    { name: 'Ink',        hex: '#101418' },
+  ];
+
+  let currentLogo = 'default';   // 'default' | dataURL string
+  const fontMeta = {
+    heading: { type: 'google', name: 'Poppins' },
+    body:    { type: 'google', name: 'DM Sans' },
+    button:  { type: 'google', name: 'DM Sans' },
+  };
+
+  /* ---------- helpers ---------- */
+  function luminance(hex) {
+    const c = hex.replace('#', '');
+    const r = parseInt(c.substr(0, 2), 16);
+    const g = parseInt(c.substr(2, 2), 16);
+    const b = parseInt(c.substr(4, 2), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+  function isValidHex(v) { return /^#[0-9a-fA-F]{6}$/.test(v); }
+
+  function applyBg(hex) {
+    modal.style.setProperty('--modal-bg', hex);
+    modal.dataset.theme = luminance(hex) < 0.5 ? 'dark' : 'light';
+    // sync preset selection
+    [...presetsWrap.children].forEach(el =>
+      el.setAttribute('aria-selected', el.dataset.hex.toLowerCase() === hex.toLowerCase()));
+  }
+
+  /* ---------- presets ---------- */
+  PRESETS.forEach(p => {
+    const sw = document.createElement('div');
+    sw.className = 'preset';
+    sw.dataset.hex = p.hex;
+    sw.title = p.name + ' · ' + p.hex;
+    sw.style.background = p.hex;
+    sw.addEventListener('click', () => {
+      bgColor.value = p.hex;
+      bgHex.value = p.hex.toUpperCase();
+      applyBg(p.hex);
+    });
+    presetsWrap.appendChild(sw);
+  });
+
+  /* ---------- background events ---------- */
+  bgColor.addEventListener('input', e => {
+    const v = e.target.value;
+    bgHex.value = v.toUpperCase();
+    applyBg(v);
+  });
+  bgHex.addEventListener('input', e => {
+    let v = e.target.value.trim();
+    if (v && v[0] !== '#') v = '#' + v;
+    if (isValidHex(v)) {
+      bgColor.value = v;
+      applyBg(v);
+    }
+  });
+
+  /* ---------- font ---------- */
+  const FONTS = [
+    ['Inter','sans'],['Roboto','sans'],['Open Sans','sans'],['Lato','sans'],['Montserrat','sans'],
+    ['Poppins','sans'],['Source Sans 3','sans'],['Nunito','sans'],['Nunito Sans','sans'],['Work Sans','sans'],
+    ['Raleway','sans'],['Rubik','sans'],['Mulish','sans'],['Manrope','sans'],['DM Sans','sans'],
+    ['Plus Jakarta Sans','sans'],['Karla','sans'],['Hanken Grotesk','sans'],['Figtree','sans'],['Outfit','sans'],
+    ['Sora','sans'],['Space Grotesk','sans'],['Be Vietnam Pro','sans'],['Onest','sans'],['Lexend','sans'],
+    ['Albert Sans','sans'],['Public Sans','sans'],['Red Hat Display','sans'],['Epilogue','sans'],['Urbanist','sans'],
+    ['Instrument Sans','sans'],['Archivo','sans'],['Barlow','sans'],['Cabin','sans'],['Heebo','sans'],
+    ['Assistant','sans'],['Josefin Sans','sans'],['Quicksand','sans'],['Comfortaa','sans'],['Jost','sans'],
+    ['PT Sans','sans'],['Noto Sans','sans'],['Oxygen','sans'],['Titillium Web','sans'],['Kanit','sans'],
+    ['Prompt','sans'],['Bricolage Grotesque','sans'],['Wix Madefor Text','sans'],['Schibsted Grotesk','sans'],['Geist','sans'],
+    ['Playfair Display','serif'],['Merriweather','serif'],['Lora','serif'],['PT Serif','serif'],['Source Serif 4','serif'],
+    ['Noto Serif','serif'],['Roboto Slab','serif'],['Bitter','serif'],['Crimson Pro','serif'],['EB Garamond','serif'],
+    ['Cormorant Garamond','serif'],['Libre Baskerville','serif'],['Spectral','serif'],['Domine','serif'],['Zilla Slab','serif'],
+    ['Newsreader','serif'],['Fraunces','serif'],['Instrument Serif','serif'],['DM Serif Display','serif'],['DM Serif Text','serif'],
+    ['Vollkorn','serif'],['Alegreya','serif'],['Literata','serif'],['Bree Serif','serif'],['Petrona','serif'],
+    ['Oswald','display'],['Bebas Neue','display'],['Anton','display'],['Abril Fatface','display'],['Lobster','display'],
+    ['Pacifico','display'],['Caveat','display'],['Dancing Script','display'],['Righteous','display'],['Fredoka','display'],
+    ['Archivo Black','display'],['Alfa Slab One','display'],['Staatliches','display'],['Teko','display'],['Permanent Marker','display'],
+    ['Roboto Mono','mono'],['Space Mono','mono'],['JetBrains Mono','mono'],['Fira Code','mono'],['IBM Plex Mono','mono'],
+    ['Source Code Pro','mono'],['Inconsolata','mono'],['DM Mono','mono'],['Ubuntu Mono','mono'],['Geist Mono','mono'],
+  ];
+  const genericFor = c => c === 'serif' ? 'serif' : c === 'mono' ? 'monospace' : 'sans-serif';
+
+  function loadGoogleFont(name) {
+    const fam = name.replace(/ /g, '+');
+    const id = 'gf-' + fam;
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id; link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?family=${fam}:wght@400;500;600;700&display=swap`;
+    link.onerror = () => {           // some families lack those weights — retry base
+      const l2 = document.createElement('link');
+      l2.rel = 'stylesheet';
+      l2.href = `https://fonts.googleapis.com/css2?family=${fam}&display=swap`;
+      document.head.appendChild(l2);
+    };
+    document.head.appendChild(link);
+  }
+
+  // lazy-load each option's preview font when it scrolls into view
+  const fontObserver = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) { loadGoogleFont(en.target.dataset.name); fontObserver.unobserve(en.target); }
+    });
+  }, { root: null, rootMargin: '200px' });
+
+  const fontGroups = { sans: 'Sans-serif', serif: 'Serif', display: 'Display', mono: 'Monospace' };
+
+  function closeAllFontMenus() {
+    document.querySelectorAll('.font-slot .font-results.open').forEach(r => {
+      r.classList.remove('open');
+      const t = r.parentElement.querySelector('.font-select');
+      if (t) t.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function setupFontSlot(slot, role, def) {
+    const trigger = slot.querySelector('.font-select');
+    const value   = slot.querySelector('.font-value');
+    const results = slot.querySelector('.font-results');
+    const fileInp = slot.querySelector('.font-file');
+    const uploadBtn = slot.querySelector('.upload-mini');
+    let uploads = 0;
+
+    Object.keys(fontGroups).forEach(cat => {
+      const items = FONTS.filter(f => f[1] === cat);
+      if (!items.length) return;
+      const head = document.createElement('div');
+      head.className = 'cat-head'; head.textContent = fontGroups[cat];
+      results.appendChild(head);
+      items.forEach(f => {
+        const opt = document.createElement('div');
+        opt.className = 'opt'; opt.setAttribute('role', 'option');
+        opt.dataset.name = f[0];
+        opt.style.fontFamily = `'${f[0]}', ${genericFor(f[1])}`;
+        opt.textContent = f[0];
+        opt.addEventListener('mousedown', ev => { ev.preventDefault(); pick(f[0], f[1]); });
+        results.appendChild(opt);
+        fontObserver.observe(opt);
+      });
+    });
+
+    function setValue(label, stack) {
+      value.textContent = label;
+      value.classList.remove('is-placeholder');
+      value.style.fontFamily = stack;
+    }
+    function pick(name, cat) {
+      loadGoogleFont(name);
+      const stack = `'${name}', ${genericFor(cat)}`;
+      modal.style.setProperty('--font-' + role, stack);
+      setValue(name, stack);
+      fontMeta[role] = { type: 'google', name };
+      closeAllFontMenus();
+    }
+
+    trigger.addEventListener('click', () => {
+      const wasOpen = results.classList.contains('open');
+      closeAllFontMenus();
+      if (!wasOpen) { results.classList.add('open'); trigger.setAttribute('aria-expanded', 'true'); }
+    });
+    trigger.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllFontMenus(); });
+
+    uploadBtn.addEventListener('click', () => fileInp.click());
+    fileInp.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) { showToast('Font file is over 5 MB — pick a smaller one'); return; }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const fam = `AIRFont_${role}_${++uploads}`;
+        try {
+          const face = new FontFace(fam, `url(${ev.target.result})`);
+          face.load().then(loaded => {
+            document.fonts.add(loaded);
+            const stack = `'${fam}', sans-serif`;
+            modal.style.setProperty('--font-' + role, stack);
+            setValue(file.name.replace(/\.[^.]+$/, ''), stack);
+            fontMeta[role] = { type: 'upload', name: file.name };
+            showToast(role.charAt(0).toUpperCase() + role.slice(1) + ' font applied');
+          }).catch(() => showToast('Could not load that font file'));
+        } catch (err) { showToast('Unsupported font file'); }
+      };
+      reader.readAsDataURL(file);
+      fileInp.value = '';
+    });
+
+    // initialise default
+    modal.style.setProperty('--font-' + role, def.stack);
+    value.style.fontFamily = def.stack;
+  }
+
+  setupFontSlot(document.querySelector('.font-slot[data-role="heading"]'), 'heading', { name: 'Poppins', stack: "'Poppins', sans-serif" });
+  setupFontSlot(document.querySelector('.font-slot[data-role="body"]'),    'body',    { name: 'DM Sans', stack: "'DM Sans', sans-serif" });
+  setupFontSlot(document.querySelector('.font-slot[data-role="button"]'),  'button',  { name: 'DM Sans', stack: "'DM Sans', sans-serif" });
+
+  document.addEventListener('click', e => { if (!e.target.closest('.font-slot')) closeAllFontMenus(); });
+
+  /* ---------- logo ---------- */
+  document.getElementById('uploadBtn').addEventListener('click', () => logoFile.click());
+  document.getElementById('resetLogoBtn').addEventListener('click', () => {
+    currentLogo = 'default';
+    modalLogo.innerHTML = DEFAULT_LOGO_SVG;
+    logoPreview.innerHTML = DEFAULT_LOGO_SVG;
+  });
+  logoFile.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { showToast('Image is over 2 MB — pick a smaller file'); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      currentLogo = ev.target.result;
+      const img = `<img src="${currentLogo}" alt="Custom logo" />`;
+      modalLogo.innerHTML = img;
+      logoPreview.innerHTML = img;
+    };
+    reader.readAsDataURL(file);
+    logoFile.value = '';
+  });
+
+  /* ---------- export ---------- */
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const bg = bgColor.value.toUpperCase();
+    const dark = luminance(bg) < 0.5;
+    const logoLine = currentLogo === 'default'
+      ? '  /* logo: default AIR mark */'
+      : '  --modal-logo: url("...");  /* custom logo uploaded — export the asset separately */';
+
+    const roles = ['heading', 'body', 'button'];
+    const imports = [];
+    const notes = [];
+    const stackOf = m => m.type === 'upload'
+      ? `'${m.name.replace(/\.[^.]+$/, '')}', sans-serif`
+      : `'${m.name}', ${/serif/i.test(m.name) ? 'serif' : 'sans-serif'}`;
+    roles.forEach(r => {
+      const m = fontMeta[r];
+      if (m.type === 'google') {
+        imports.push(`@import url('https://fonts.googleapis.com/css2?family=${m.name.replace(/ /g, '+')}:wght@400;500;600;700&display=swap');`);
+      } else {
+        notes.push(`/* ${r} font "${m.name}" — ship the file and declare it with @font-face. */`);
+      }
+    });
+    const prefix = [...new Set(imports), ...notes].join('\n');
+
+    const config =
+`${prefix ? prefix + '\n\n' : ''}/* AIR login modal — brand theme */
+.air-login-modal {
+  --modal-bg: ${bg};
+  --modal-font-heading: ${stackOf(fontMeta.heading)};
+  --modal-font-body: ${stackOf(fontMeta.body)};
+  --modal-font-button: ${stackOf(fontMeta.button)};
+  --modal-text: ${dark ? '#FFFFFF' : '#002536'};
+  --modal-text-soft: ${dark ? 'rgba(255,255,255,0.62)' : '#798B95'};
+  --modal-surface: ${dark ? 'rgba(255,255,255,0.08)' : '#FFFFFF'};
+  --modal-radius: 32px;
+${logoLine}
+}`;
+    navigator.clipboard.writeText(config)
+      .then(() => showToast('Theme config copied'))
+      .catch(() => showToast('Copy failed — select and copy manually'));
+  });
+
+  let toastTimer;
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  }
+
+  /* init */
+  applyBg('#F7F7F7');
+})();
+</script>
